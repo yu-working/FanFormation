@@ -99,9 +99,9 @@ def get_answer(user_message,his,ptt_df,
         api_key = os.getenv("OPENAI_API_KEY")
         load_dotenv()
         if "OPENAI_API_KEY" in os.environ:
-            st.write(api_key)
+            st.write()
         else:
-            st.write("QAQ")
+            st.write("Can't get api key")
         client = OpenAI(api_key=api_key)
         #改用project api key
         if "ptt_df" not in st.session_state:
