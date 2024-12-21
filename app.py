@@ -140,7 +140,7 @@ def get_answer(user_message,his,ptt_df,
         for chunk in keyword_maker:
             if chunk.choices[0].delta.content is not None:
                 keyword += chunk.choices[0].delta.content
-        st.title(keyword)
+        #st.title(keyword) #debug用keyword檢視
         yh_news = yahoo_news(keyword)
         #--------------------------------------------------------------------------#
         res = ""
