@@ -13,20 +13,30 @@ from openai import OpenAI
 import requests
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
+from googlesearch import search
+from lxml.html import fromstring
 
 #===
-def yh_news(yh_url="https://tw.news.yahoo.com/sports/"):
-    if not yhnews:
-        yhnews=[]
-    else:
-        return
-    r = requests.get(yh_url) #將網頁資料GET下來
-    soup = BeautifulSoup(r.text,"html.parser") #將網頁資料以html.parser
-    for i in range(5):
-        sel = soup.select(f"#scoreboard-group-2 div div:nth-child(2) ul li:nth-child({i+1}) div div a") #取HTML標中的 <div class="title"></div> 中的<a>標籤存入sel
-        for s in sel:
-            text = re.sub(r'\d+', '', s.text).replace('--', ' / ', 1).replace('--','')
-            yhnews.append(text)
+def yahoo_news(keyword):
+    yh_news = []
+    keyword += "yahoo"
+    for j in search(keyword, stop=3, pause=2.0, lang='zh-tw'):
+            print(j) #可忽略
+            r = requests.get(j)
+            try:
+                tree = fromstring(r.content)
+            except:
+                continue
+            title = tree.findtext('.//title')
+            if title == '403 Forbidden':
+                title = ""
+            print(title)
+            soup = BeautifulSoup(r.text,"html.parser")
+            sel = soup.select(f"div.caas-body")
+            for s in sel:
+                print(s.text)
+            yh_news.append([title, sel])
+    return yh_news
 #===
 
 def ptt_search(ptt_url="https://www.ptt.cc/bbs/FAPL/index.html"):
@@ -63,7 +73,7 @@ def ptt_search(ptt_url="https://www.ptt.cc/bbs/FAPL/index.html"):
 his = None
 ptt_url = "https://www.ptt.cc/bbs/FAPL/index.html"
 
-st.session_state.chat_history = pd.read_csv('user_inputs.csv') if 'user_inputs.csv' in os.listdir() else pd.DataFrame(columns=['Uesr', 'Testbed'])
+st.session_state.chat_history = pd.read_csv('user_inputs.csv') if 'user_inputs.csv' in os.listdir() else pd.DataFrame(columns=['Uesr', 'AI'])
 now = datetime.now().strftime('%Y-%m-%d %H:%M') #colab
 st.session_state.ptt_df = pd.read_csv('ptt_news.csv') if 'ptt_news.csv' in os.listdir() else ptt_search()
 
@@ -109,6 +119,30 @@ def get_answer(user_message,his,ptt_df,
         else:
             st.session_state.ptt_df = ptt_search(ptt_url)
         Ndata,Mdata = RAG()
+
+        # 發送請求到 OpenAI API，並獲取回應
+        keyword_maker = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages =  [
+            {  # prompt
+                'role':'system',
+                'content': "將使用者提問轉換為搜尋引擎用的關鍵字"
+            },
+            {
+                'role':'user',
+                'content': f"{user_message}"
+            }
+        ],
+            stream=True,
+        )
+        keyword = ""
+        # 顯示生成的文本
+        for chunk in keyword_maker:
+            if chunk.choices[0].delta.content is not None:
+                keyword += chunk.choices[0].delta.content
+        st.title(keyword)
+        yh_news = yahoo_news(keyword)
+        #--------------------------------------------------------------------------#
         res = ""
         stream = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -119,7 +153,7 @@ def get_answer(user_message,his,ptt_df,
                 你是一個經常觀看足球賽事的人，請按照使用者的提問，根據當下時間{now}以及現有資料，使用繁體中文進行簡潔的回覆，不得超過三個段落，每個段落也需簡短。
                 當使用者以簡稱詢問時，請使用完整名稱如:英格蘭超級足球聯賽、西班牙甲級足球聯賽、馬德里競技俱樂部、皇家馬德里足球俱樂部等進行回覆，
                 並且在全稱後面加上英文原文作為註記。
-                請先查看歷史資料庫中{Ndata}、{Mdata}、歷史對話紀錄{his}與網站'PTT'上近期的資料{ptt_df}有無相關資料。
+                請先查看歷史資料庫中{Ndata}、{Mdata}、歷史對話紀錄{his}、論壇'PTT'上近期的資料{ptt_df}、yahoo新聞網站上{yh_news}有無相關資料。
                 當你進行預測時，需有準確的比分以提供使用者參考，並且提及球員表現作為分析依據。
                 當你進行知識介紹時，可以簡單介紹後結合新聞介紹
                 當你提到球員表現時，需準確的提出相關的比賽。
@@ -144,8 +178,8 @@ def get_answer(user_message,his,ptt_df,
 def main():
     global new_entry
     st.title('大語言模型應用於足球運動賽事分析')
-    st.subheader("歡迎來到Soccer Testbed！")
-    st.write("一個專為足球賽事設計的大型語言模型工具，Soccer Testbed可能會發生錯誤。請查核重要資訊。")
+    st.subheader("歡迎來到QuickFan AI！")
+    st.write("一個專為運動設計的大型語言模型工具，QuickFan AI可能會發生錯誤。請查核重要資訊。")
     #NEW
     default_text = "請輸入你的問題..."
     preset_text_1 = "預測日本對上印尼的比分。"
@@ -161,6 +195,7 @@ def main():
         user_message = st.text_area("請問我能為你做什麼:", value=st.session_state['user_message'], key='user_message_area')
         submit_button = st.form_submit_button(label='傳送')
     st.write("**快速體驗**")
+    st.write("我不清楚怎使用......")
     col1, col2, col3, col4, col5 = st.columns(5)
     with col1:
         if st.button('預測比分', key='preset_button_1'):
@@ -197,7 +232,7 @@ def main():
             ptt_df = pd.read_csv('ptt_news.csv')
         except:
             ptt_df = None
-        new_entry = pd.DataFrame([{'User': user_message, 'Testbed': get_answer(user_message,his,ptt_df)}])
+        new_entry = pd.DataFrame([{'User': user_message, 'AI': get_answer(user_message,his,ptt_df)}])
         st.session_state.chat_history = pd.concat([st.session_state.chat_history, new_entry], ignore_index=True)
         new_entry.to_csv('user_inputs.csv', mode='a', header=not os.path.exists('user_inputs.csv'), index=False)
         
@@ -206,11 +241,11 @@ def main():
         # get history
         for index, row in st.session_state.chat_history.iloc[::-1].iterrows():
             user = str(row['User'])
-            text = str(row['Testbed'])
+            text = str(row['AI'])
             
             #print history
             st.markdown("User : " + user, unsafe_allow_html=True)
-            st.markdown("Testbed : "+ text, unsafe_allow_html=True)
+            st.markdown("QuickFan AI : "+ text, unsafe_allow_html=True)
             st.markdown("---")
 
 if __name__ == "__main__":
