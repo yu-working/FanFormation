@@ -140,7 +140,7 @@ def get_answer(user_message,his,ptt_df,
         for chunk in keyword_maker:
             if chunk.choices[0].delta.content is not None:
                 keyword += chunk.choices[0].delta.content
-        #st.title(keyword) #debug用keyword檢視
+        #st.title(keyword) keyword檢視
         yh_news = yahoo_news(keyword)
         #--------------------------------------------------------------------------#
         res = ""
@@ -178,8 +178,8 @@ def get_answer(user_message,his,ptt_df,
 def main():
     global new_entry
     st.title('大語言模型應用於足球運動賽事分析')
-    st.subheader("歡迎來到QuickFan AI！")
-    st.write("一個專為運動設計的大型語言模型工具，QuickFan AI可能會發生錯誤。請查核重要資訊。")
+    st.subheader("歡迎來到FanFormation！")
+    st.write("一個專為運動設計的大型語言模型工具，FanFormation可能會發生錯誤。請查核重要資訊。")
     #NEW
     default_text = "請輸入你的問題..."
     preset_text_1 = "預測日本對上印尼的比分。"
@@ -195,7 +195,7 @@ def main():
         user_message = st.text_area("請問我能為你做什麼:", value=st.session_state['user_message'], key='user_message_area')
         submit_button = st.form_submit_button(label='傳送')
     st.write("**快速體驗**")
-    st.write("我不清楚怎使用......")
+    st.write("如果您不清楚怎使用，可以點擊下列按鈕")
     col1, col2, col3, col4, col5 = st.columns(5)
     with col1:
         if st.button('預測比分', key='preset_button_1'):
@@ -245,7 +245,7 @@ def main():
             
             #print history
             st.markdown("User : " + user, unsafe_allow_html=True)
-            st.markdown("QuickFan AI : "+ text, unsafe_allow_html=True)
+            st.markdown("FanFormation : "+ text, unsafe_allow_html=True)
             st.markdown("---")
 
 if __name__ == "__main__":
