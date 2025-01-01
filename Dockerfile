@@ -5,7 +5,7 @@ FROM python:3.9
 WORKDIR /app
 
 # install Streamlit
-RUN pip install streamlit==1.27.0 matplotlib langchain openai langchain-community scipy bs4 python-dotenv google lxml
+RUN pip install streamlit==1.27.0 matplotlib langchain openai langchain-community bs4 python-dotenv google lxml
 
 
 # copy
