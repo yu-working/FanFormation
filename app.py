@@ -197,7 +197,20 @@ def get_answer(user_message,his,ptt_df,
 def main():
     global new_entry
     st.title('歡迎來到FanFormation！')
-    st.write("FanFormation可能會發生錯誤。請查核重要資訊。")
+    scroll_script = """
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var element = document.getElementById("scroll-here");
+            if (element) {
+                element.scrollIntoView({ behavior: "smooth" });
+            }
+        });
+    </script>
+    """
+
+    # 插入 JavaScript，確保執行但不影響版面
+    st.markdown(scroll_script, unsafe_allow_html=True)
+    st.write("FanFormation可能會發生錯誤。請查核重要資訊。如有其他疑惑，可以參考[說明](https://github.com/yu-working/FanFormation.git)")
     #NEW
     if "placeholder" not in st.session_state:
         st.session_state.placeholder = "請輸入您的訊息..."
@@ -207,8 +220,7 @@ def main():
     preset_text_4 = "2024年世界棒球12強賽冠軍賽的勝負關鍵?"
     preset_text_5 = "請為我組建一支最強的隊伍?"
 
-    st.write("**快速體驗**")
-    st.write("如果您不清楚怎麼使用，可以點擊下列按鈕")
+    st.write("**快速體驗** : 如果您不清楚怎麼使用，可以點擊下列按鈕")
     col1, col2, col3, col4, col5 = st.columns(5)
     with col1:
         if st.button('預測比分', key='preset_button_1'):
@@ -252,30 +264,68 @@ def main():
         new_entry.to_csv('chat_history.csv', mode='a', header=not os.path.exists('chat_history.csv'), index=False)
         
         #st.success('complete!')
-        bg_color = "#f0f8ff"
-        # get history
-        for index, row in st.session_state.chat_history.iloc[::-1].iterrows():
-            user = str(row['User'])
-            text = str(row['AI'])
-            
-            st.markdown(            
-                f"""
-                <div style="text-align: right;; background-color: {bg_color}; padding: 10px; border-radius: 5px;">
-                    {user} : User  
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-            st.write("")
-            st.markdown(            
-                f"""
-                <div style="text-align: left;; background-color: {bg_color}; padding: 10px; border-radius: 5px;">
-                    FanFormation : {text}  
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-            st.markdown("---")
+        # 設定背景顏色
+        bg_color_user = "#f0f8ff"  # 使用者背景色
+        bg_color_ai = "#f9f9f9"    # AI 回應背景色
 
+        # 用 st.markdown() 設定 CSS，讓內容區塊固定高度
+        chat_html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+            .container {{
+            text-align: right; /* 確保父容器對齊 */
+            }}
+            .fixed-height-box {{
+                height: 240px;
+                overflow-y: auto;
+                border: 1px solid #ccc;
+                padding: 10px;
+                background-color: #f9f9f9;
+            }}
+            .user-message {{
+                display: inline-block;
+                background-color: {bg_color_user};
+                padding: 10px;
+                border-radius: 5px;
+                margin-bottom: 5px;
+                white-space: pre-wrap;
+            }}
+            .ai-message {{
+                text-align: left;
+                background-color: {bg_color_ai};
+                padding: 10px;
+                border-radius: 5px;
+                margin-bottom: 5px;
+                white-space: pre-wrap;
+            }}
+            </style>
+        </head>
+        <body>
+
+        <div class="fixed-height-box" id="chat-box">
+        """
+
+        # **讀取歷史紀錄**
+        for _, row in st.session_state.chat_history.iterrows():
+            user = str(row['User']).strip()
+            text = str(row['AI']).strip().replace("\n", "<br>")
+
+            chat_html += f"""
+                <div class="container"><div class="user-message">{user}</div></div>
+                <div class="ai-message">{text}</div>
+            """
+
+        chat_html += """
+        </div>
+        <script>
+            var chatBox = document.getElementById("chat-box");
+            chatBox.scrollTop = chatBox.scrollHeight;
+        </script>
+        </body></html>
+        """
+        
+        st.components.v1.html(chat_html, height=250)
 if __name__ == "__main__":
     main()
