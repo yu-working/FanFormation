@@ -44,6 +44,7 @@ docker run -d -p 8501:8501 --name fanformation fanformation
 開啟瀏覽器，查看`localhost:8501`，確認網頁是否正確運行
 ![空白頁](https://github.com/user-attachments/assets/3247eb6e-61ef-40f0-abc2-5c954018de8d)
 
+## 使用
 ### 提問
 在下方的對話框中輸入你的提問，語言模型將結合新聞時事，彙整回覆
 ![image](https://github.com/user-attachments/assets/7d063354-627c-4122-9edd-4b3629660bc5)
