@@ -326,6 +326,6 @@ def main():
         </body></html>
         """
         
-        st.components.v1.html(chat_html, height=250)
+        st.components.v1.html(chat_html, height=270)
 if __name__ == "__main__":
     main()
