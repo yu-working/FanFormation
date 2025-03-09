@@ -48,6 +48,11 @@ docker run -d -p 8501:8501 --name fanformation fanformation
 在下方的對話框中輸入你的提問，語言模型將結合新聞時事，彙整回覆
 ![image](https://github.com/user-attachments/assets/7d063354-627c-4122-9edd-4b3629660bc5)
 
+### 快速體驗
+如果不知道從何問起，可以點擊按鈕查看參考提問
+![image](https://github.com/user-attachments/assets/5f8959f2-6630-4f56-96aa-1a7fb59b3152)
+
+
 ## 聯絡作者
 
 你可以透過以下方式與我聯絡
